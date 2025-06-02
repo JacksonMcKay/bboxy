@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+.mapboxgl-control-container,
+[mapboxgl-children] {
+  display: none;
+}
