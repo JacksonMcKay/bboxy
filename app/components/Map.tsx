@@ -420,7 +420,10 @@ export default function Map() {
                 <GlobeIcon />
               </ToolButton>
               <hr className="my-1 h-[1px] border-0 bg-gray-200" />
-              <ToolButton href="https://github.com/JacksonMcKay/bboxy">
+              <ToolButton
+                href="https://github.com/JacksonMcKay/bboxy"
+                tooltip="View on GitHub"
+              >
                 <GithubIcon />
               </ToolButton>
             </div>
