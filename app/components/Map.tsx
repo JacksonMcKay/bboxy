@@ -304,15 +304,24 @@ export default function Map() {
     };
   }, []);
 
-  // Render bounding box when the map loads if it was populated from the URL
-  const renderBoundingBoxIfExists = useCallback(() => {
+  useEffect(() => {
+    // Render bounding box during/after drawing it
     renderBoundingBox(boundingBox);
   }, [boundingBox, renderBoundingBox]);
 
+  // Re-render bounding box when map style changes
+  const [prevMapStyle, setPrevMapStyle] = useState(mapStyle);
+
   useEffect(() => {
-    // Render bounding box during/after drawing it
-    renderBoundingBoxIfExists();
-  }, [boundingBox, renderBoundingBoxIfExists]);
+    if (prevMapStyle !== mapStyle) {
+      // Small delay to ensure the new style is fully loaded
+      const timer = setTimeout(() => {
+        renderBoundingBox(boundingBox);
+        setPrevMapStyle(mapStyle);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [mapStyle, prevMapStyle, renderBoundingBox, boundingBox]);
 
   const fitToBoundsIfRequested = useCallback(() => {
     if (
@@ -365,7 +374,7 @@ export default function Map() {
         pitch={0}
         bearing={0}
         cursor={activeTool === 'rectangle' ? 'crosshair' : 'grab'}
-        onLoad={renderBoundingBoxIfExists}
+        onLoad={() => renderBoundingBox(boundingBox)}
         onRender={fitToBoundsIfRequested}
       />
       <div className="pointer-events-none absolute inset-3 flex flex-col justify-between gap-3">
