@@ -5,11 +5,13 @@ import {
   MapRef,
   MapTouchEvent,
 } from 'react-map-gl/mapbox';
+import GeoJsonModal from './GeoJsonModal';
 import GithubIcon from './GithubIcon';
 import GlobeIcon from './GlobeIcon';
 import HandIcon from './HandIcon';
 import MapIcon from './MapIcon';
 import SquareIcon from './SquareIcon';
+import TextPasteIcon from './TextPasteIcon';
 import { ToolButton } from './ToolButton';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -40,6 +42,7 @@ export default function Map() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [fitToBoundsNextRender, setFitToBoundsNextRender] = useState(false);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite'>('streets');
+  const [showGeoJsonModal, setShowGeoJsonModal] = useState(false);
 
   // Parse bounding box from URL hash if it exists
   useEffect(() => {
@@ -133,6 +136,13 @@ export default function Map() {
     },
     [formatBoundingBox],
   );
+
+  const handleGeoJsonSubmit = (bbox: [number, number, number, number]) => {
+    const [minLng, minLat, maxLng, maxLat] = bbox;
+    setBoundingBox({ start: [minLng, minLat], end: [maxLng, maxLat] });
+    updateURL([minLng, minLat], [maxLng, maxLat]);
+    setFitToBoundsNextRender(true);
+  };
 
   const handleMouseDown = useCallback(
     (e: MapMouseEvent | MapTouchEvent) => {
@@ -296,6 +306,9 @@ export default function Map() {
       } else if (e.key === 's' && noModifiers) {
         e.preventDefault();
         setMapStyle((prev) => (prev === 'streets' ? 'satellite' : 'streets'));
+      } else if (e.key === 't' && noModifiers) {
+        e.preventDefault();
+        setShowGeoJsonModal(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -430,6 +443,13 @@ export default function Map() {
               </ToolButton>
               <hr className="my-1 h-[1px] border-0 bg-gray-200" />
               <ToolButton
+                onClick={() => setShowGeoJsonModal(true)}
+                tooltip="Import GeoJSON (T)"
+              >
+                <TextPasteIcon />
+              </ToolButton>
+              <hr className="my-1 h-[1px] border-0 bg-gray-200" />
+              <ToolButton
                 href="https://github.com/JacksonMcKay/bboxy"
                 tooltip="View on GitHub"
               >
@@ -446,6 +466,12 @@ export default function Map() {
           </p>
         </div>
       </div>
+
+      <GeoJsonModal
+        isOpen={showGeoJsonModal}
+        onClose={() => setShowGeoJsonModal(false)}
+        onSubmit={handleGeoJsonSubmit}
+      />
     </div>
   );
 }
